@@ -1,0 +1,236 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>หุ่นยนต์ครูน้อย</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mali:wght@500;700&family=Sarabun:wght@400;500;700&display=swap">
+<style>
+/* Layout: chalkboard game. Left = map + run controls, right = program workspace. Single deliberate dark look. */
+:root{
+  --board:#1d332d; --board2:#264238; --chalk:#f4f1e6; --dim:#a9bdb4; --line:#3d5f53;
+  --yellow:#ffd34d; --coral:#ff7b66; --sky:#7cc8ff; --mint:#7fe0a8; --ink:#14231e;
+  --f-display:'Mali','Sarabun',sans-serif; --f-body:'Sarabun','Noto Sans Thai',sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--board);color:var(--chalk);font-family:var(--f-body);font-size:17px;line-height:1.6}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.wrap{max-width:1080px;margin:0 auto;padding:18px 16px 56px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+h1{font-family:var(--f-display);font-weight:700;font-size:1.9rem;margin:0;line-height:1.2}
+h1 small{display:block;font-family:var(--f-body);font-weight:400;font-size:.92rem;color:var(--dim)}
+h2{font-family:var(--f-display);font-weight:700;font-size:1.15rem;margin:0 0 6px}
+.lv{display:flex;gap:6px;flex-wrap:wrap}
+.lvb{border:2px solid var(--line);background:var(--board2);border-radius:10px;padding:4px 10px;cursor:pointer;min-width:62px;text-align:center;font-weight:700;line-height:1.3}
+.lvb small{display:block;font-weight:400;font-size:.75rem;color:var(--yellow);letter-spacing:.1em}
+.lvb[aria-current="true"]{border-color:var(--yellow);background:#33554a}
+.lvb:disabled{opacity:.45;cursor:not-allowed}
+.main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.box{background:var(--board2);border:2px solid var(--line);border-radius:14px;padding:14px}
+canvas{display:block;width:100%;height:auto;border-radius:10px;background:#16261f;border:2px solid var(--line)}
+.mission{margin:0 0 10px;color:var(--chalk)}
+.concept{display:inline-block;background:var(--yellow);color:var(--ink);font-weight:700;border-radius:99px;padding:1px 12px;font-size:.85rem;margin-bottom:6px}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.btn{border:2px solid var(--yellow);background:var(--yellow);color:var(--ink);font-weight:700;border-radius:10px;padding:8px 18px;cursor:pointer}
+.btn.alt{background:transparent;color:var(--yellow)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.status{margin-top:12px;padding:10px 14px;border-radius:10px;border:2px dashed var(--line);min-height:48px}
+.status.win{border:2px solid var(--mint);color:var(--mint)}
+.status.lose{border:2px solid var(--coral);color:var(--coral)}
+.pal{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.pb{border:2px solid var(--line);background:var(--board);border-radius:8px;padding:6px 10px;cursor:pointer;font-weight:700}
+.pb:hover{border-color:var(--sky)}
+.pb.f{border-color:var(--mint)} .pb.t{border-color:var(--sky)} .pb.c{border-color:var(--yellow)}
+.prog{min-height:180px;background:var(--board);border:2px dashed var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:4px}
+.item{display:flex;align-items:center;gap:6px;border-radius:8px;padding:4px 8px;border:2px solid var(--line);background:var(--board2)}
+.item.act{outline:3px solid var(--coral)}
+.item.cont{flex-direction:column;align-items:stretch;border-color:var(--yellow)}
+.item.cont.tgt{background:#3a5a4d}
+.hd{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.hd button.x{margin-left:auto}
+.body{margin-left:10px;border-left:3px solid var(--yellow);padding-left:8px;display:flex;flex-direction:column;gap:4px;min-height:30px}
+.x{background:none;border:none;color:var(--coral);cursor:pointer;font-size:1.1rem;padding:0 6px;line-height:1}
+.tg{border:2px solid var(--line);background:var(--board);border-radius:6px;padding:0 8px;cursor:pointer;font-size:.82rem}
+.item.cont.tgt .tg{border-color:var(--yellow);color:var(--yellow)}
+.hint{color:var(--dim);font-size:.9rem}
+.cnt{color:var(--dim);font-size:.92rem;margin:8px 0 0}
+select{background:var(--board);border:2px solid var(--line);border-radius:6px;padding:0 4px}
+.teacher{margin-top:16px}
+.teacher details{border:2px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--board2)}
+summary{cursor:pointer;font-weight:700}
+.stars{color:var(--yellow);letter-spacing:.1em}
+@media(max-width:780px){.main{grid-template-columns:minmax(0,1fr)} h1{font-size:1.5rem}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>หุ่นยนต์ครูน้อย<small>เกมฝึกการคิดเชิงคำนวณ สำหรับนักศึกษาครูคอมพิวเตอร์ · เรียงบล็อกคำสั่งให้หุ่นยนต์ไปถึงธง</small></h1>
+    <div><span class="stars" id="tot" aria-label="ดาวรวม"></span></div>
+  </header>
+  <div class="lv" id="lv" role="tablist"></div>
+  <div class="main" style="margin-top:14px">
+    <section class="box" aria-label="แผนที่">
+      <span class="concept" id="cc"></span>
+      <h2 id="lt"></h2>
+      <p class="mission" id="ms"></p>
+      <canvas id="cv" width="480" height="480" aria-label="แผนที่ของหุ่นยนต์"></canvas>
+      <div class="ctl">
+        <button class="btn" id="run" type="button">▶ เริ่มทำงาน</button>
+        <button class="btn alt" id="rst" type="button">รีเซ็ตหุ่นยนต์</button>
+        <label class="hint" for="spd">ความเร็ว</label><select id="spd"><option value="600">ช้า</option><option value="320" selected>ปกติ</option><option value="120">เร็ว</option></select>
+      </div>
+      <div class="status" id="st" role="status">กดเริ่มทำงานเมื่อเรียงบล็อกเสร็จ</div>
+    </section>
+    <section class="box" aria-label="พื้นที่เขียนโปรแกรม">
+      <h2>โปรแกรมของคุณ</h2>
+      <div class="pal" id="pal"></div>
+      <div class="prog" id="prog" aria-live="polite"></div>
+      <p class="cnt" id="cnt"></p>
+      <div class="ctl"><button class="btn alt" id="clr" type="button">ล้างโปรแกรม</button><button class="btn alt" id="hintb" type="button">ดูเฉลยแนวทาง</button></div>
+    </section>
+  </div>
+  <div class="teacher"><details><summary>มุมครู: เชื่อมเกมนี้กับการสอนการคิดเชิงคำนวณ</summary><div id="tn" style="margin-top:8px"></div></details></div>
+</div>
+
+<script>
+var $=function(id){return document.getElementById(id)};
+var W=6,H=6,DIR=[[0,-1],[1,0],[0,1],[-1,0]];
+var LEVELS=[
+ {t:'ก้าวแรก',c:'ลำดับขั้นตอน (Sequence)',m:'สั่งให้หุ่นยนต์เดินไปถึงธง คำสั่งทำงานทีละบล็อกจากบนลงล่าง',
+  g:['......','......','......','......','......','S..G..'],d:1,par:3,sol:['F','F','F'],
+  tn:'ใช้ถามนักเรียนว่า "ถ้าสลับลำดับบล็อก ผลจะเปลี่ยนไหม" เพื่อให้เห็นว่าลำดับสำคัญ'},
+ {t:'เลี้ยวซ้ายขวา',c:'ลำดับขั้นตอน (Sequence)',m:'หุ่นยนต์หันขึ้นด้านบน ใช้บล็อกเลี้ยวเพื่อไปถึงธง',
+  g:['......','......','...G..','......','......','S.....'],d:0,par:7,sol:['F','F','F','R','F','F','F'],
+  tn:'ชวนให้นักเรียนทำนายก่อนกดเริ่ม แล้วเทียบกับผลจริง เป็นการฝึกการอ่านโค้ด (tracing)'},
+ {t:'ขั้นบันได',c:'การวนซ้ำ (Loop)',m:'รูปแบบเดิมซ้ำหลายรอบ ลองใช้บล็อก "วนซ้ำ" แทนการวางบล็อกซ้ำ ๆ คะแนนดาวดูจากจำนวนบล็อกที่ใช้',
+  g:['......','......','....G.','......','......','S.....'],d:1,par:6,sol:['F',{t:'loop',n:3,body:['L','F','R','F']}],
+  tn:'ถามนักเรียนว่า "เห็นรูปแบบอะไรซ้ำ" แล้วให้ตั้งชื่อรูปแบบ นำไปสู่การหารูปแบบ (pattern recognition) และการนามธรรม'},
+ {t:'เก็บดาว 3 ดวง',c:'การวนซ้ำ (Loop)',m:'เก็บดาวให้ครบทุกดวงก่อนไปถึงธง ดาวอยู่ตามมุม',
+  g:['S..*..','G.....','......','*..*..','......','......'],d:1,par:7,sol:[{t:'loop',n:3,body:['F','F','F','R']},'F','F'],
+  tn:'ให้นักเรียนอธิบายว่าเหตุใดวนซ้ำ 3 รอบจึงพอ ไม่ใช่ 4 รอบ ฝึกการให้เหตุผลเชิงตรรกะ'},
+ {t:'ทางตัน',c:'เงื่อนไข (Selection)',m:'หุ่นยนต์ต้องเดินตามทางที่หักมุม ใช้ "วนจนถึงธง" กับ "ถ้าข้างหน้าเป็นกำแพง" เพื่อให้โปรแกรมเดียวใช้ได้ทั้งเส้นทาง',
+  g:['......','.####.','.####.','.####.','.####.','S##G..'],d:0,par:4,sol:[{t:'until',body:[{t:'if',body:['R']},'F']}],
+  tn:'ชี้ให้เห็นว่าเงื่อนไขทำให้โปรแกรมตัดสินใจเองตามสถานการณ์ เชื่อมกับ if…then ในภาษาโปรแกรมจริง'},
+ {t:'ทางงู',c:'ลูปซ้อนลูป (Nested loop)',m:'เก็บดาวทุกดวงตามทางงูแล้วไปถึงธง ลองหาลูปที่ซ้อนอยู่ในลูป',
+  g:['S....*','*.....','.....*','*.....','G.....','......'],d:1,par:11,
+  sol:[{t:'loop',n:2,body:[{t:'loop',n:5,body:['F']},'R','F','R',{t:'loop',n:5,body:['F']},'L','F','L']}],
+  tn:'ท้าให้นักเรียนหาจำนวนบล็อกที่น้อยที่สุด แล้วอภิปรายว่าโปรแกรมสั้นกว่าดีกว่าเสมอหรือไม่ (ความอ่านง่ายกับความสั้น)'}
+];
+var ST={lv:0,prog:[],tgt:null,idc:1,anim:null,pos:null,stars:[],best:[0,0,0,0,0,0],act:null};
+try{var r=localStorage.getItem('robot-v1');if(r)ST.best=JSON.parse(r)}catch(e){}
+function saveB(){try{localStorage.setItem('robot-v1',JSON.stringify(ST.best))}catch(e){}}
+function parse(L){var cells=[],start=null,goal=null,stars=[];L.g.forEach(function(row,y){cells[y]=[];for(var x=0;x<W;x++){var ch=row[x];cells[y][x]=ch==='#'?1:0;if(ch==='S')start={x:x,y:y};if(ch==='G')goal={x:x,y:y};if(ch==='*')stars.push({x:x,y:y})}});return{cells:cells,start:start,goal:goal,stars:stars}}
+/* ---- simulator ---- */
+function sim(L,prog){
+  var M=parse(L),x=M.start.x,y=M.start.y,d=L.d,got={},trace=[],steps=0,fail=null;
+  function ahead(){var n=[x+DIR[d][0],y+DIR[d][1]];return n[0]<0||n[1]<0||n[0]>=W||n[1]>=H||M.cells[n[1]][n[0]]===1}
+  function atGoal(){return x===M.goal.x&&y===M.goal.y}
+  function push(id,bump){trace.push({x:x,y:y,d:d,got:JSON.parse(JSON.stringify(got)),id:id,bump:!!bump})}
+  push(null);
+  function run(list){
+    for(var i=0;i<list.length;i++){
+      if(fail)return;if(++steps>900){fail='limit';return}
+      var it=list[i];
+      if(it.t==='F'){if(ahead()){fail='bump';push(it.id,true);return}x+=DIR[d][0];y+=DIR[d][1];M.stars.forEach(function(s){if(s.x===x&&s.y===y)got[s.x+','+s.y]=1});push(it.id)}
+      else if(it.t==='L'){d=(d+3)%4;push(it.id)}
+      else if(it.t==='R'){d=(d+1)%4;push(it.id)}
+      else if(it.t==='loop'){for(var k=0;k<it.n&&!fail;k++)run(it.body)}
+      else if(it.t==='until'){var g=0;while(!atGoal()&&g++<60&&!fail)run(it.body)}
+      else if(it.t==='if'){if(ahead())run(it.body)}
+    }
+  }
+  run(prog);
+  var all=M.stars.every(function(s){return got[s.x+','+s.y]});
+  var res=fail?fail:(!atGoal()?'nogoal':(!all?'nostar':'ok'));
+  return{trace:trace,res:res,M:M};
+}
+function count(list){return list.reduce(function(n,it){return n+1+(it.body?count(it.body):0)},0)}
+function build(list){return list.map(function(s){if(typeof s==='string')return{t:s,id:ST.idc++};var o={t:s.t,id:ST.idc++,n:s.n,body:build(s.body)};return o})}
+/* ---- drawing ---- */
+var cv=$('cv'),g=cv.getContext('2d'),CS=80;
+function star(cx,cy,r){g.beginPath();for(var i=0;i<10;i++){var a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.45:r;g.lineTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr)}g.closePath();g.fill()}
+function draw(frame){
+  var L=LEVELS[ST.lv],M=parse(L);g.clearRect(0,0,480,480);
+  for(var y=0;y<H;y++)for(var x=0;x<W;x++){
+    g.fillStyle=(x+y)%2?'#1b2f27':'#203a30';g.fillRect(x*CS,y*CS,CS,CS);
+    if(M.cells[y][x]){g.fillStyle='#5b4a3a';g.fillRect(x*CS+3,y*CS+3,CS-6,CS-6);g.fillStyle='#7a644f';g.fillRect(x*CS+3,y*CS+3,CS-6,14);g.fillRect(x*CS+3,y*CS+38,CS-6,10)}
+  }
+  g.strokeStyle='#3d5f53';g.lineWidth=1;for(var i=0;i<=W;i++){g.beginPath();g.moveTo(i*CS,0);g.lineTo(i*CS,480);g.stroke();g.beginPath();g.moveTo(0,i*CS);g.lineTo(480,i*CS);g.stroke()}
+  var gx=M.goal.x*CS,gy=M.goal.y*CS;g.fillStyle='#f4f1e6';g.fillRect(gx+26,gy+14,5,54);g.fillStyle='#ff7b66';g.beginPath();g.moveTo(gx+31,gy+14);g.lineTo(gx+62,gy+26);g.lineTo(gx+31,gy+40);g.fill();
+  var got=frame?frame.got:{};g.fillStyle='#ffd34d';M.stars.forEach(function(s){if(!got[s.x+','+s.y])star(s.x*CS+CS/2,s.y*CS+CS/2,24)});
+  var f=frame||{x:M.start.x,y:M.start.y,d:L.d,bump:false};
+  g.save();g.translate(f.x*CS+CS/2,f.y*CS+CS/2);g.rotate(f.d*Math.PI/2);
+  g.fillStyle='#7cc8ff';g.strokeStyle='#0b2b3d';g.lineWidth=3;g.beginPath();g.roundRect?g.roundRect(-24,-24,48,48,10):g.rect(-24,-24,48,48);g.fill();g.stroke();
+  g.fillStyle='#0b2b3d';g.beginPath();g.arc(-9,-6,5,0,7);g.arc(9,-6,5,0,7);g.fill();
+  g.fillStyle='#ff7b66';g.beginPath();g.moveTo(0,-34);g.lineTo(-11,-22);g.lineTo(11,-22);g.fill();
+  g.restore();
+  if(f.bump){g.fillStyle='rgba(255,123,102,.35)';g.fillRect(f.x*CS,f.y*CS,CS,CS)}
+}
+/* ---- program UI ---- */
+function find(list,id,par){for(var i=0;i<list.length;i++){if(list[i].id===id)return{list:list,i:i};if(list[i].body){var r=find(list[i].body,id);if(r)return r}}return null}
+function targetList(){if(ST.tgt){var r=find(ST.prog,ST.tgt);if(r)return r.list[r.i].body;ST.tgt=null}return ST.prog}
+var LBL={F:'เดินหน้า 1 ช่อง',L:'เลี้ยวซ้าย',R:'เลี้ยวขวา'};
+function itemHTML(it){
+  var act=ST.act===it.id?' act':'';
+  if(it.body){
+    var head=it.t==='loop'?'วนซ้ำ <select data-n="'+it.id+'" aria-label="จำนวนรอบ">'+[2,3,4,5,6].map(function(n){return '<option'+(n===it.n?' selected':'')+'>'+n+'</option>'}).join('')+'</select> รอบ':(it.t==='until'?'วนจนกว่าจะถึงธง':'ถ้าข้างหน้าเป็นกำแพง');
+    return '<div class="item cont'+(ST.tgt===it.id?' tgt':'')+act+'"><div class="hd"><b>'+head+'</b><button type="button" class="tg" data-t="'+it.id+'">'+(ST.tgt===it.id?'กำลังใส่ในนี้':'ใส่ในนี้')+'</button><button type="button" class="x" data-x="'+it.id+'" aria-label="ลบบล็อก">✕</button></div><div class="body">'+(it.body.length?it.body.map(itemHTML).join(''):'<span class="hint">ว่าง</span>')+'</div></div>';
+  }
+  return '<div class="item'+act+'"><b>'+LBL[it.t]+'</b><button type="button" class="x" data-x="'+it.id+'" aria-label="ลบบล็อก">✕</button></div>';
+}
+function renderProg(){
+  $('prog').innerHTML=ST.prog.length?ST.prog.map(itemHTML).join(''):'<span class="hint">ยังไม่มีบล็อก กดปุ่มด้านบนเพื่อเพิ่มคำสั่ง</span>';
+  var n=count(ST.prog),par=LEVELS[ST.lv].par;$('cnt').textContent='ใช้ '+n+' บล็อก · เป้าหมายสามดาว: ไม่เกิน '+par+' บล็อก'+(ST.tgt?' · กำลังใส่ในบล็อกที่เลือก':'');
+  Array.prototype.forEach.call($('prog').querySelectorAll('[data-x]'),function(b){b.onclick=function(){var r=find(ST.prog,+b.dataset.x);if(r){if(ST.tgt===r.list[r.i].id)ST.tgt=null;r.list.splice(r.i,1)}renderProg()}});
+  Array.prototype.forEach.call($('prog').querySelectorAll('[data-t]'),function(b){b.onclick=function(){var id=+b.dataset.t;ST.tgt=ST.tgt===id?null:id;renderProg()}});
+  Array.prototype.forEach.call($('prog').querySelectorAll('[data-n]'),function(s){s.onchange=function(){var r=find(ST.prog,+s.dataset.n);r.list[r.i].n=+s.value;renderProg()}});
+}
+function add(t){stop();var it={t:t,id:ST.idc++};if(t==='loop'){it.n=3;it.body=[]}if(t==='until'||t==='if')it.body=[];targetList().push(it);if(it.body)ST.tgt=it.id;renderProg()}
+function pal(){
+  var L=ST.lv,P=[['F','เดินหน้า','f'],['L','เลี้ยวซ้าย','t'],['R','เลี้ยวขวา','t'],['loop','วนซ้ำ','c']];
+  if(L>=4)P.push(['until','วนจนถึงธง','c'],['if','ถ้าชนกำแพง','c']);
+  $('pal').innerHTML=P.map(function(p){return '<button type="button" class="pb '+p[2]+'" data-a="'+p[0]+'">+ '+p[1]+'</button>'}).join('');
+  Array.prototype.forEach.call($('pal').querySelectorAll('button'),function(b){b.onclick=function(){add(b.dataset.a)}});
+}
+/* ---- run ---- */
+function stop(){if(ST.anim){clearInterval(ST.anim);ST.anim=null}ST.act=null;$('run').disabled=false}
+var MSG={bump:'หุ่นยนต์ชนกำแพงหรือขอบแผนที่ ตรวจบล็อกที่ไฮไลต์สีแดงในโปรแกรม',nogoal:'หุ่นยนต์ยังไม่ถึงธง ตรวจว่าบล็อกครบหรือเลี้ยวผิดทิศ',nostar:'ถึงธงแล้วแต่ยังเก็บดาวไม่ครบ',limit:'โปรแกรมทำงานซ้ำนานเกินไป ตรวจบล็อกวนซ้ำ'};
+function run(){
+  stop();var L=LEVELS[ST.lv];var out=sim(L,ST.prog);var tr=out.trace,i=0;
+  if(!ST.prog.length){$('st').className='status lose';$('st').textContent='ยังไม่มีบล็อกในโปรแกรม';return}
+  $('run').disabled=true;$('st').className='status';$('st').textContent='กำลังทำงาน…';
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function fin(){
+    ST.act=null;$('run').disabled=false;renderProg();
+    if(out.res==='ok'){
+      var n=count(ST.prog),s=n<=L.par?3:(n<=L.par+3?2:1);ST.best[ST.lv]=Math.max(ST.best[ST.lv]||0,s);saveB();lvBtns();
+      $('st').className='status win';$('st').innerHTML='สำเร็จ! ใช้ '+n+' บล็อก ได้ <span class="stars">'+'★'.repeat(s)+'☆'.repeat(3-s)+'</span>'+(s<3?' · ลองลดจำนวนบล็อกให้ไม่เกิน '+L.par+' เพื่อได้สามดาว':'')+(ST.lv<LEVELS.length-1?' · ด่านถัดไปปลดล็อกแล้ว':' · ครบทุกด่านแล้ว');
+    }else{$('st').className='status lose';$('st').textContent=MSG[out.res]}
+  }
+  if(reduce){draw(tr[tr.length-1]);ST.ret=1;fin();return}
+  ST.anim=setInterval(function(){
+    var f=tr[i];draw(f);ST.act=f.id;renderProg();i++;
+    if(i>=tr.length){clearInterval(ST.anim);ST.anim=null;fin()}
+  },+$('spd').value);
+}
+/* ---- levels ---- */
+function lvBtns(){
+  var tot=ST.best.reduce(function(a,b){return a+(b||0)},0);$('tot').textContent='★ '+tot+' / '+(LEVELS.length*3);
+  $('lv').innerHTML=LEVELS.map(function(l,i){var open=i===0||ST.best[i-1]>0;return '<button class="lvb" type="button" role="tab" data-l="'+i+'"'+(open?'':' disabled')+' aria-current="'+(ST.lv===i)+'">ด่าน '+(i+1)+'<small>'+(ST.best[i]?'★'.repeat(ST.best[i]):(open?'—':'ล็อก'))+'</small></button>'}).join('');
+  Array.prototype.forEach.call($('lv').querySelectorAll('button'),function(b){b.onclick=function(){setLv(+b.dataset.l)}});
+}
+function setLv(i){
+  stop();ST.lv=i;ST.prog=[];ST.tgt=null;var L=LEVELS[i];
+  $('cc').textContent=L.c;$('lt').textContent='ด่าน '+(i+1)+' · '+L.t;$('ms').textContent=L.m;
+  $('st').className='status';$('st').textContent='กดเริ่มทำงานเมื่อเรียงบล็อกเสร็จ';
+  $('tn').innerHTML='<p><b>แนวคิด:</b> '+L.c+'</p><p>'+L.tn+'</p>';
+  lvBtns();pal();renderProg();draw(null);
+}
+$('run').onclick=run;
+$('rst').onclick=function(){stop();draw(null);$('st').className='status';$('st').textContent='รีเซ็ตแล้ว';renderProg()};
+$('clr').onclick=function(){stop();ST.prog=[];ST.tgt=null;renderProg();draw(null)};
+$('hintb').onclick=function(){stop();ST.prog=build(LEVELS[ST.lv].sol);ST.tgt=null;renderProg();draw(null);$('st').className='status';$('st').textContent='นี่คือแนวทางเฉลย ลองกดเริ่ม แล้วดูว่าลดจำนวนบล็อกหรือเขียนต่างออกไปได้ไหม'};
+setLv(0);
+</script>
+
+</body></html>
